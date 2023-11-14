@@ -40,11 +40,19 @@
 #define LCD_CS PA_3
 
 //Pines asignados a los dos botones de la Tiva-C
+const int sw1Pin = PF_4; // SW1 conectado a GPIO pin PF4
 const int sw2Pin = PF_0; // SW2 conectado a GPIO pin PF0
 
 //Variables para desplegar la temperatura
 String tempc;
 String temp;
+
+//Variable de control para cambiar lo que se muestra en la pantalla
+int control = 0;
+
+File root;
+
+File myFile;
 
 //***************************************************************************************************************************************
 // Functions Prototypes
@@ -74,6 +82,7 @@ extern uint8_t subzero[];
 void setup() {
 
   //Se definen los pines de botón cómo input con pullup interno
+  pinMode(sw1Pin, INPUT_PULLUP);
   pinMode(sw2Pin, INPUT_PULLUP);
 
   //Se inicia la comunicación serial con el ESP32
@@ -82,6 +91,22 @@ void setup() {
 
   SysCtlClockSet(SYSCTL_SYSDIV_2_5|SYSCTL_USE_PLL|SYSCTL_OSC_MAIN|SYSCTL_XTAL_16MHZ);
   SPI.setModule(0);
+
+  Serial.print("Initializing SD card...");
+  // Se define el pin de la SD cómo Output
+  pinMode(PE_3, OUTPUT);
+
+  //Revisar si está disponible una SD
+  if (!SD.begin(PE_3)) {
+    Serial.println("initialization failed!");
+    return;
+  }
+  Serial.println("initialization done.");
+
+  //Mostrar que archivos hay guardados en la SD
+  root = SD.open("/");
+
+  Serial.println("done!");
 
   Serial.println("Inicio");
   LCD_Init();
@@ -156,6 +181,28 @@ void loop() {
     String mid = "Midiendo...";
     LCD_Print(mid, 10, 60, 2, 0x00, 0xfff);
     control = 0;
+  }
+
+  if (digitalRead(sw1Pin) == LOW) {
+    Serial2.println("y");
+    // Abrir el archivo donde están las temperaturas
+    myFile = SD.open("proy3.txt", FILE_WRITE);
+
+    // Escribir la temperatura en el
+    if (myFile) {
+      Serial.print("Escribiendo en proy3.txt...");
+      myFile.println(temp);
+      // close the file:
+      myFile.close();
+      Serial.println("done.");
+      String guardado = "Guardado!";
+      LCD_Print(guardado, 140, 80, 2, 0xffff, 0x00);
+      
+    } else {
+    // Decir que hubo un error abriéndolo
+    Serial.println("error opening test.txt");
+  }
+  delay(250);
   }
 
   //Se revisa si hay comunicación serial
