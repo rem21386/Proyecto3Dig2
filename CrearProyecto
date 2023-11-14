@@ -28,7 +28,11 @@ void setup() {
 
 /////////////////////LOOP////////////////////////
 void loop() {
-
+  //Se revisa si hay comunicación serial disponible
+  if (Serial2.available() > 0) {
+    char comand = Serial2.read();
+    //Si se recibe una "x"
+    if (comand == 'x'){
     //Se inicia la transmisión con el sensor
     Wire.beginTransmission(LM75_ADDR);
     Wire.write(0);
@@ -46,4 +50,10 @@ void loop() {
       Serial.print(tempC);
       Serial.println(" °C");
     }
+    char buffer[8];
+    dtostrf(tempC, 4, 2, buffer); //Se manda con 2 digitos y dos decimales
+    Serial2.print(buffer);
+    delay(250);
+}
+}
 }
