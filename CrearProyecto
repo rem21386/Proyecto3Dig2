@@ -1,1 +1,31 @@
-//Crear Proyecto
+//Código de cada uno en branches
+//Pines asignados a los dos botones de la Tiva-C
+const int sw2Pin = PF_0; // SW2 conectedo a pin PF0
+
+String tempc;
+String temp;
+
+void setup() {
+  //Se definen los pines de botón cómo input con pullup interno
+  pinMode(sw2Pin, INPUT_PULLUP);
+
+  //Se inicia la comunicación serial con el ESP32 y con la computadora
+  Serial2.begin(115200);
+  Serial.begin(115200);
+}
+
+void loop() {
+
+  if (digitalRead(sw2Pin) == LOW) {
+    Serial2.println("x");
+  }
+
+  //Se revisa si hay comunicación serial
+  if (Serial2.available() > 0) {
+    //Se lee el texto enviado del esp cómo un String
+    String texto2 = "Temperatura: ";
+    tempc = Serial2.readStringUntil('\n');
+    temp = tempc + "C ";
+    delay(250);
+}
+}
