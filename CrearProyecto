@@ -1,1 +1,49 @@
-//Crear Proyecto
+//***************************************************************************************************************************************
+//Proyecto 2 - Electrónica Digital 2 - Santiago Remis 21386
+//***************************************************************************************************************************************
+
+////////////LIBRERÍAS/////////////////
+#include <Arduino.h>
+
+#include <Wire.h>
+
+//Dirección LM75 I2C
+#define LM75_ADDR 0x48
+
+//Variable float para registrar la temperatura
+volatile float tempC;
+
+////////////////////////////////SETUP////////////////////////
+
+void setup() {
+    //Se inicia la comunicación I2C
+    Wire.begin();
+
+    //Empieza la comunicación serial en el puerto 2 con la Tiva-C
+    Serial2.begin(115200);
+
+    //Empieza la comunicación serial en el puerto 0 con la computadora
+    Serial.begin(115200);
+}
+
+/////////////////////LOOP////////////////////////
+void loop() {
+
+    //Se inicia la transmisión con el sensor
+    Wire.beginTransmission(LM75_ADDR);
+    Wire.write(0);
+    Wire.endTransmission();
+  
+    // Se leen 2 bytes de temperatura
+    Wire.requestFrom(LM75_ADDR, 2);
+    if (Wire.available() >= 2) {
+      //Se convierte a grados centígrados
+      int tempRaw = Wire.read() << 8 | Wire.read();
+      tempC = tempRaw / 256.0;
+
+      //Se imprime la temperatura en el monitor serial
+      Serial.print("Temperature: ");
+      Serial.print(tempC);
+      Serial.println(" °C");
+    }
+}
